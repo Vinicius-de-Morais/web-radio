@@ -1,6 +1,8 @@
-use std::path;
+use std::{fs::File, path};
 
-use crate::objects::{subscriber::Subscriber, station::station_state::StationState};
+use rocket::serde;
+
+use crate::objects::{station::station_state::StationState, subscriber::Subscriber, track::track::Track};
 
 pub struct Station {
     pub name: String,
@@ -8,6 +10,7 @@ pub struct Station {
     pub path: String,
     pub frequency: f32,
     pub _state: Box<dyn StationState>,
+    pub tracks: Vec<Track>,
 }
 
 
@@ -19,6 +22,7 @@ impl Station {
             path,
             frequency,
             _state,
+            tracks: Vec::new(),
         }
     }
 
@@ -50,6 +54,19 @@ impl Station {
         }
         
         music_vec
+    }
+
+    fn get_tracks_from_file(&self) {
+        let binding = self.path.clone() + "metadata.json";
+        let metadata_path = path::Path::new(&binding);
+
+        let metadata_file: Vec<Track> = serde_json::from_reader(File::open(metadata_path).unwrap()).unwrap();
+
+        
+    }
+
+    fn fill_track(&self){
+
     }
 
     // Funções que acredito que vão estar no state
