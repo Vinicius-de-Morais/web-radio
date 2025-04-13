@@ -16,14 +16,18 @@ pub struct Station {
 
 impl Station {
     pub fn new(name: String, path: String, frequency: f32, _state: Box<dyn StationState>) -> Station {
-        Station {
+        let mut station = Station {
             name,
             _subscribers: Vec::new(),
             path,
             frequency,
             _state,
             tracks: Vec::new(),
-        }
+        };
+
+        station.fill_tracks();
+
+        station
     }
 
     pub fn add_subscriber(&mut self, subscriber: Subscriber) {
@@ -38,7 +42,7 @@ impl Station {
         self._state = state;
     }
 
-    pub fn get_music_vec(&self) -> Vec<String> {
+    pub fn get_music_files(&self) -> Vec<String> {
         let mut music_vec = Vec::new();
         
         if let Ok(entries) = std::fs::read_dir(&self.path) {
@@ -56,17 +60,17 @@ impl Station {
         music_vec
     }
 
-    fn get_tracks_from_file(&self) {
+    fn get_music_vec(&self) -> Vec<Track> {
         let binding = self.path.clone() + "metadata.json";
         let metadata_path = path::Path::new(&binding);
 
         let metadata_file: Vec<Track> = serde_json::from_reader(File::open(metadata_path).unwrap()).unwrap();
 
-        
+        metadata_file   
     }
 
-    fn fill_track(&self){
-
+    fn fill_tracks(&mut self){
+        self.tracks = self.get_music_vec();
     }
 
     // Funções que acredito que vão estar no state
@@ -77,6 +81,5 @@ impl Station {
     pub fn play(&self) {
         // self._state.play();
     }
-
 
 }
