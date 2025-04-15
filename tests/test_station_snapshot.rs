@@ -1,8 +1,5 @@
 #[cfg(test)]
 mod test_station_snapshot {
-    use std::clone;
-    use std::ops::Deref;
-
     use chrono::Local;
     use web_radio::objects::station::station::Station;
     use web_radio::objects::station::station_snapshot::StationSnapshot;
