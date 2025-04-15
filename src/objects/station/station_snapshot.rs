@@ -1,13 +1,15 @@
 use std::ptr::null_mut;
 
-use rocket::{http::private::Listener, time::Date};
+use rocket::{futures::stream::Filter, http::private::Listener, time::Date};
 use chrono::prelude::{NaiveDate, Local};
 
-use crate::objects::{subscriber::Subscriber, track::track::Track, station::station::Station};
+use crate::objects::{station::station::Station, subscriber::Subscriber, track::track::Track};
 
-struct StationSnapshot {
-    pub name: String,
-    pub owner_station: Station,
+use super::station;
+
+pub struct StationSnapshot {
+    name: String,
+    station: Station,
     current_track: Option<Track>,
     track_history: Vec<Track>,
     subscribers: Vec<Subscriber>,
@@ -17,10 +19,10 @@ struct StationSnapshot {
 
 impl StationSnapshot {
     
-    pub fn new(owner_station:Station) -> Self {
+    pub fn new(station:Station) -> Self {
         Self {
-            name: format!("{} - snapshot", owner_station.name),
-            owner_station,
+            name: format!("{} - Snapshot", station.name),
+            station,
             current_track: None,
             track_history:Vec::new(),
             subscribers:Vec::new(),
@@ -29,22 +31,33 @@ impl StationSnapshot {
         }
     }
 
-    fn historic_trail_range(&mut self, track:Track){
-        self.track_history
-            .push(
-                Some(track.clone())
-                .expect("Erro ao adicionar a track no historico!!!!")
-            ); 
+    pub fn station(self) -> Station {
+        return self.station;
     }
 
+    pub fn name(&mut self) -> String{
+        return self.name.clone();
+    }
+    
+    pub fn creation(&mut self) -> NaiveDate {
+        return self.created_on;
+    }
+
+    fn historic_trail_range(&mut self, track:Track){
+        self.track_history.push(track.clone()); 
+    }
+
+    pub fn track_history_list(&mut self) -> Vec<Track> {
+        return self.track_history.clone();
+    }
+
+    pub fn get_current_track(&mut self) -> Track {
+        return self.current_track.clone().expect("Track ainda nao setada!");
+    }
+    
     pub fn set_current_track(&mut self, track:Track) {
         self.current_track = Some(track.clone());        
-
         self.historic_trail_range(track);
-    }
-
-    pub fn get_track_history(&mut self) -> Vec<Track> {
-        return self.track_history.clone();
     }
 
     pub fn listener_in(&mut self) {
@@ -55,8 +68,20 @@ impl StationSnapshot {
         self.listeners -= 1;
     }
 
-    pub fn get_listener_count(&mut self) -> u32 {
+    pub fn listeners_count(&mut self) -> u32 {
         return self.listeners;
+    }
+
+    pub fn subscribed_subscribers(&mut self) -> Vec<Subscriber> {
+        return self.subscribers.clone();
+    } 
+
+    pub fn subscriber_unassign(&mut self, subout:Subscriber ) {
+        self.subscribers.retain(|subscriber| subscriber != &subout );
+    }
+
+    pub fn subscriber_assign(&mut self, subs:Subscriber) {
+        self.subscribers.push(subs);
     }
 
 }
