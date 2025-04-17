@@ -9,7 +9,7 @@ mod test_station_snapshot {
 
 
     fn get_station_test() -> Station {
-        let station_state = MockStationState::new();
+        let station_state: MockStationState = MockStationState::new();
         Station::new(
             "Diamond City Radio".to_owned(),
             "./diamond_city_radio/".to_owned(),
@@ -33,9 +33,9 @@ mod test_station_snapshot {
 
     #[test]
     fn test_create_snapshot() {
-        let station = get_station_test();
-        let station_name = station.name.clone();
-        let mut snapshot = StationSnapshot::new(station);
+        let station: Station = get_station_test();
+        let station_name: String = station.name.clone();
+        let mut snapshot: StationSnapshot = StationSnapshot::new(station);
 
         assert_eq!(snapshot.name(), format!("{} - Snapshot", station_name));
         assert_eq!(snapshot.listeners_count(), 0);
@@ -46,9 +46,9 @@ mod test_station_snapshot {
 
     #[test]
     fn test_set_current_track_and_history() {
-        let station = get_station_test();
-        let mut snapshot = StationSnapshot::new(station);
-        let track = mock_track();
+        let station: Station = get_station_test();
+        let mut snapshot: StationSnapshot = StationSnapshot::new(station);
+        let track: Track = mock_track();
 
         snapshot.set_current_track(track.clone());
 
@@ -58,16 +58,16 @@ mod test_station_snapshot {
 
     #[test]
     fn test_get_track_history() {
-        let station = get_station_test();
-        let mut snapshot = StationSnapshot::new(station);
+        let station: Station = get_station_test();
+        let mut snapshot: StationSnapshot = StationSnapshot::new(station);
 
-        let t1 = mock_track();
-        let t2 = Track { title: "Second Track".into(), ..mock_track() };
+        let t1: Track = mock_track();
+        let t2: Track = Track { title: "Second Track".into(), ..mock_track() };
 
         snapshot.set_current_track(t1.clone());
         snapshot.set_current_track(t2.clone());
 
-        let history = snapshot.track_history_list();
+        let history: Vec<Track> = snapshot.track_history_list();
         assert_eq!(history.len(), 2);
         assert_eq!(history[0].title, t1.title);
         assert_eq!(history[1].title, t2.title);
@@ -75,14 +75,17 @@ mod test_station_snapshot {
 
     #[test]
     fn test_listener_in_out() {
-        let station = get_station_test();
-        let mut snapshot = StationSnapshot::new(station);
+        let station: Station = get_station_test();
+        let mut snapshot: StationSnapshot = StationSnapshot::new(station);
 
+        let in_:u32 = 2;
+
+        let out:u32 = 1;
         snapshot.listener_in();
         snapshot.listener_in();
-        assert_eq!(snapshot.listeners_count(), 2);
+        assert_eq!(snapshot.listeners_count(), in_);
 
         snapshot.listener_out();
-        assert_eq!(snapshot.listeners_count(), 1);
+        assert_eq!(snapshot.listeners_count(), out);
     }
 }
