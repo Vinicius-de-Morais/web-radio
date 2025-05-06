@@ -1,4 +1,7 @@
 use std::sync::mpsc::channel;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
 use std::{collections::HashMap, env, path::Path};
 
 use bytes::Bytes;
@@ -21,16 +24,30 @@ pub mod track;
 #[macro_use]
 extern crate rocket;
 
+fn schedule_next_track(station: Arc<Mutex<Station>>) {
+    thread::spawn(move || loop {
+        let ms = {
+            let st = station.lock().unwrap();
+            st.current_track.file_info.audio_milliseconds
+        };
+        thread::sleep(Duration::from_millis(ms));
+        station.lock().unwrap().next();
+    });
+}
+
 #[get("/")]
 fn index() -> RawHtml<&'static [u8]> {
     return RawHtml(b"<!DOCTYPE html>\n<audio controls src='/station'>");
 }
 
-type StationMap = HashMap<String, Station>;
+type StationMap = HashMap<String, Arc<Mutex<Station>>>;
 
 #[get("/station")]
-fn station_endpoint(state: &rocket::State<StationMap>) -> (ContentType, ByteStream![Bytes]) {
-    let station = state.get("diamondcityradio").unwrap();
+fn station_endpoint(state: &rocket::State<StationMap>) 
+    -> (ContentType, ByteStream![Bytes]) 
+{
+    let station = state.get("RadioZero").unwrap();
+    let station = station.lock().unwrap();
     let stream = station
         .cytoplasm
         .output_streams
@@ -56,6 +73,17 @@ fn rocket() -> _ {
         let cytoplasm = Cytoplasm::new(&[OutputCodec::Mp3_64kbps], track_rx);
 
         let station = Station::new(station_base_dir, manifest, cytoplasm, track_tx);
+
+        let station = Arc::new(Mutex::new(station));
+
+
+        // Preciso fazer a transição de DownState → PlayingState, se não fizer isso, quando chama o next() DownState::next não avança a faixa então vai ficar retornando a msm faixa sempre.
+        {
+            let mut st = station.lock().unwrap();
+            st.play();
+        }
+
+        schedule_next_track(station.clone());
 
         stations.insert(station_id.to_owned(), station);
     }

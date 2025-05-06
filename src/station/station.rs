@@ -68,6 +68,9 @@ impl Station {
         self.state = new_state;
 
         let _ = self.track_tx.send(self.current_track.clone());
+
+        print!("Atualizando track: ");
+        println!("{:#?}", self.current_track);
     }
 
     pub fn save_snapshot(&mut self) {
