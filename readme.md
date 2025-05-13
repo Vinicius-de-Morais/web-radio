@@ -2,6 +2,34 @@
 
 Web Radio para tocar músicas online
 
+# Como rodar o projeto 🚀
+
+
+## Pré requisitos
+
+ - [Rust](https://www.rust-lang.org/tools/install)
+ - [Git](https://git-scm.com/downloads)
+ - [FFmpeg](https://ffmpeg.org/download.html)
+
+### ⚠️ IMPORTANTE: **FFmpeg (OBRIGATÓRIO)**
+
+Este projeto depende do **FFmpeg E FFprobe** para decodificar e transcodificar os arquivos de áudio.
+Você **precisa instalar o FFmpeg E** **e adicionar a pasta `bin` dele às variáveis de ambiente do sistema (`PATH`)**, ou o programa **NÃO FUNCIONARÁ**.
+
+ ## 📥 Clonando o repositório
+
+```bash
+    git clone https://github.com/Vinicius-de-Morais/web-radio.git
+    cd web-radio
+```
+ ## ▶️ Rodando o projeto
+
+```bash
+    cargo run
+```
+A aplicação estará disponível no seguinte endereço local:
+http://127.0.0.1:6969
+
 ## Diagrama
 
 ![Texto alternativo](Diagrama.png)
